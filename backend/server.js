@@ -5,6 +5,7 @@ import cors from 'cors';
 import { env_vars }from './config/envVars.js';
 import authRoutes from './routes/authRoute.js';
 import employeeRoutes from './routes/employeeRoutes.js';
+import leaveRoutes from './routes/leaveRoutes.js';
 
 dotenv.config();
 const app = express();
@@ -13,6 +14,7 @@ app.use(express.json());
 
 app.use("/api/auth", authRoutes);
 app.use("/api/employees", employeeRoutes);
+app.use("/api/leaves", leaveRoutes);
 
 const PORT = env_vars.PORT;
 app.listen(PORT, () => {
