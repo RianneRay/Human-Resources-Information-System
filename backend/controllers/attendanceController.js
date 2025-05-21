@@ -1,4 +1,5 @@
 import Attendance from '../models/attendanceModel.js';
+import { createNotification } from './notificationController.js';
 
 export const clockIn = async (req, res) => {
   try {
@@ -16,6 +17,9 @@ export const clockIn = async (req, res) => {
 
     record.clockIn = new Date();
     await record.save();
+
+    // Notify employee
+    await createNotification(employee, 'attendance', 'You have successfully clocked in.');
 
     res.status(200).json(record);
   } catch (err) {
@@ -35,6 +39,9 @@ export const clockOut = async (req, res) => {
 
     record.clockOut = new Date();
     await record.save();
+
+    // Notify employee
+    await createNotification(employee, 'attendance', 'You have successfully clocked out.');
 
     res.status(200).json(record);
   } catch (err) {

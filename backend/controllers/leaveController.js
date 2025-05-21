@@ -1,4 +1,5 @@
 import Leave from '../models/leaveModel.js';
+import { createNotification } from './notificationController.js';
 
 export const requestLeave = async (req, res) => {
   try {
@@ -26,8 +27,16 @@ export const updateLeaveStatus = async (req, res) => {
   }
 
   try {
-    const updated = await Leave.findByIdAndUpdate(req.params.id, { status }, { new: true });
+    const updated = await Leave.findByIdAndUpdate(req.params.id, { status }, { new: true }).populate('employee', 'name');
     if (!updated) return res.status(404).json({ message: 'Leave request not found' });
+
+    // Notify employee
+    await createNotification(
+      updated.employee._id,
+      'leave',
+      `Your leave request from ${new Date(updated.startDate).toDateString()} to ${new Date(updated.endDate).toDateString()} was ${status.toLowerCase()}.`
+      );
+
     res.json(updated);
   } catch (err) {
     res.status(500).json({ message: err.message });
