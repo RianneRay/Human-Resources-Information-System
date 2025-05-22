@@ -3,7 +3,11 @@ import { createNotification } from './notificationController.js';
 
 export const requestLeave = async (req, res) => {
   try {
-    const leave = new Leave(req.body);
+    const leave = new Leave({
+      ...req.body,
+      employee: req.user._id // set employee ID from token
+    });
+
     const saved = await leave.save();
     res.status(201).json(saved);
   } catch (err) {
@@ -38,6 +42,18 @@ export const updateLeaveStatus = async (req, res) => {
       );
 
     res.json(updated);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+export const deleteLeave = async (req, res) => {
+  try {
+    const deleted = await Leave.findByIdAndDelete(req.params.id);
+    if (!deleted) {
+      return res.status(404).json({ message: 'Leave not found' });
+    }
+    res.json({ message: 'Leave deleted successfully' });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

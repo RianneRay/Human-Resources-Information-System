@@ -22,7 +22,7 @@ export const getAdminDashboard = async (req, res) => {
 };
 
 export const getEmployeeDashboard = async (req, res) => {
-  const { employeeId } = req.params;
+  const employeeId = req.user._id; // Use ID from token, not req.params
   try {
     const profile = await Employee.findById(employeeId);
     const leaveStatus = await Leave.find({ employee: employeeId }).sort({ createdAt: -1 }).limit(3);
