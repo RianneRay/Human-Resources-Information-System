@@ -8,19 +8,19 @@ import {
   updateEmployeeProfile,
   updateEmployeePassword
 } from '../controllers/employeeController.js';
-import { protect } from '../middleware/authMiddleware.js';
+import { protect, adminOnly } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
 // CRUD for employees
 router.route('/')
-  .get(getEmployees)
-  .post(createEmployee);
+  .get(protect, adminOnly, getEmployees)
+  .post(protect, adminOnly, createEmployee);
 
 router.route('/:id')
-  .get(getEmployeeById)
-  .put(updateEmployee)
-  .delete(deleteEmployee);
+  .get(protect, adminOnly, getEmployeeById)
+  .put(protect, adminOnly, updateEmployee)
+  .delete(protect, adminOnly, deleteEmployee);
 
 // Profile routes (authenticated)
 router.put('/profile/update', protect, updateEmployeeProfile);

@@ -1,4 +1,3 @@
-// controllers/employeeController.js
 import Employee from '../models/employeeModel.js';
 import User from '../models/User.js';
 
@@ -55,8 +54,18 @@ export const getEmployeeById = async (req, res) => {
 
 export const updateEmployee = async (req, res) => {
   try {
-    const updated = await Employee.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    res.json(updated);
+    const employee = await Employee.findByIdAndUpdate(req.params.id, req.body, { new: true });
+
+    // Also update user role if role is changed
+    if (req.body.role) {
+      const user = await User.findOne({ email: employee.email });
+      if (user) {
+        user.role = req.body.role;
+        await user.save();
+      }
+    }
+
+    res.json(employee);
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
@@ -64,8 +73,17 @@ export const updateEmployee = async (req, res) => {
 
 export const deleteEmployee = async (req, res) => {
   try {
+    // Find the employee first
+    const employee = await Employee.findById(req.params.id);
+    if (!employee) return res.status(404).json({ message: 'Employee not found' });
+
+    // Delete the employee record
     await Employee.findByIdAndDelete(req.params.id);
-    res.json({ message: 'Employee deleted' });
+
+    // Also delete the corresponding user (by email match)
+    await User.findOneAndDelete({ email: employee.email });
+
+    res.json({ message: 'Employee and associated user credentials deleted' });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
