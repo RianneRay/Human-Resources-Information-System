@@ -1,17 +1,15 @@
 import Employee from '../models/employeeModel.js';
 import Department from '../models/departmentModel.js';
 
-// View all employees
 export const getAllEmployees = async (req, res) => {
   try {
-    const employees = await Employee.find();
+    const employees = await Employee.find().populate('department', 'name');
     res.json(employees);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
 
-// Update employee role (e.g., promote to admin)
 export const updateUserRole = async (req, res) => {
   const { id } = req.params;
   const { role } = req.body;

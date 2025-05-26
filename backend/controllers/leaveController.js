@@ -3,21 +3,35 @@ import { createNotification } from './notificationController.js';
 
 export const requestLeave = async (req, res) => {
   try {
+    const { type, startDate, endDate, reason } = req.body;
+
     const leave = new Leave({
-      ...req.body,
-      employee: req.user._id // set employee ID from token
+      employee: req.user._id,
+      type,
+      startDate,
+      endDate,
+      reason
     });
 
-    const saved = await leave.save();
-    res.status(201).json(saved);
+    await leave.save();
+    res.status(201).json({ message: 'Leave request submitted', leave });
   } catch (err) {
-    res.status(400).json({ message: err.message });
+    res.status(500).json({ message: err.message });
   }
 };
 
 export const getAllLeaves = async (req, res) => {
   try {
-    const leaves = await Leave.find().populate('employee', 'name email');
+    const leaves = await Leave.find().populate('employee', 'name');
+    res.json(leaves);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+export const getMyLeaves = async (req, res) => {
+  try {
+    const leaves = await Leave.find({ employee: req.user._id }).populate('employee', 'name');
     res.json(leaves);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -34,7 +48,6 @@ export const updateLeaveStatus = async (req, res) => {
     const updated = await Leave.findByIdAndUpdate(req.params.id, { status }, { new: true }).populate('employee', 'name');
     if (!updated) return res.status(404).json({ message: 'Leave request not found' });
 
-    // Notify employee
     await createNotification(
       updated.employee._id,
       'leave',

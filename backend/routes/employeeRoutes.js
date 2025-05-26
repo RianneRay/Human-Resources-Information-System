@@ -12,7 +12,6 @@ import { protect, adminOnly } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-// CRUD for employees
 router.route('/')
   .get(protect, adminOnly, getEmployees)
   .post(protect, adminOnly, createEmployee);
@@ -22,7 +21,6 @@ router.route('/:id')
   .put(protect, adminOnly, updateEmployee)
   .delete(protect, adminOnly, deleteEmployee);
 
-// Profile routes (authenticated)
 router.put('/profile/update', protect, updateEmployeeProfile);
 router.put('/profile/password', protect, updateEmployeePassword);
 

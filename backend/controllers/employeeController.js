@@ -1,25 +1,45 @@
 import Employee from '../models/employeeModel.js';
 import User from '../models/User.js';
+import Department from '../models/departmentModel.js';
+import bcrypt from 'bcryptjs';
 
 export const createEmployee = async (req, res) => {
   try {
-    const { name, email, position, department, role, password } = req.body;
+    const { name, email, phone, address, position, department, role, password } = req.body;
 
-    // Check if email already used by a user
+    // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ error: 'Email already in use' });
     }
 
-    // Create Employee record
-    const employee = new Employee({ name, email, position, department });
+    // Validate department ID if provided
+    let departmentRef = null;
+    if (department) {
+      const foundDept = await Department.findById(department);
+      if (!foundDept) {
+        return res.status(400).json({ error: 'Invalid department ID' });
+      }
+      departmentRef = foundDept._id;
+    }
+
+    // Create employee profile
+    const employee = new Employee({
+      name,
+      email,
+      phone,
+      address,
+      position,
+      department: departmentRef,
+      role: role || 'employee'
+    });
     await employee.save();
 
-    // Create User record (with default role as 'employee' if not given)
+    // Create login credentials
     const user = new User({
       name,
       email,
-      password, // This will be hashed by the pre-save middleware in userSchema
+      password,
       role: role || 'employee'
     });
     await user.save();
@@ -35,7 +55,7 @@ export const createEmployee = async (req, res) => {
 
 export const getEmployees = async (req, res) => {
   try {
-    const employees = await Employee.find();
+    const employees = await Employee.find().populate('department', 'name');
     res.json(employees);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -56,7 +76,6 @@ export const updateEmployee = async (req, res) => {
   try {
     const employee = await Employee.findByIdAndUpdate(req.params.id, req.body, { new: true });
 
-    // Also update user role if role is changed
     if (req.body.role) {
       const user = await User.findOne({ email: employee.email });
       if (user) {
@@ -73,14 +92,11 @@ export const updateEmployee = async (req, res) => {
 
 export const deleteEmployee = async (req, res) => {
   try {
-    // Find the employee first
     const employee = await Employee.findById(req.params.id);
     if (!employee) return res.status(404).json({ message: 'Employee not found' });
 
-    // Delete the employee record
     await Employee.findByIdAndDelete(req.params.id);
 
-    // Also delete the corresponding user (by email match)
     await User.findOneAndDelete({ email: employee.email });
 
     res.json({ message: 'Employee and associated user credentials deleted' });
@@ -88,18 +104,19 @@ export const deleteEmployee = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-
-// Update basic info
 export const updateEmployeeProfile = async (req, res) => {
   try {
-    const employee = await Employee.findById(req.user._id);
+    const employee = await Employee.findOne({ email: req.user.email });
     if (!employee) return res.status(404).json({ message: 'User not found' });
 
-    const { name, phone, address, department } = req.body;
+    const { name, email, position, department, phone, address } = req.body;
+
     if (name) employee.name = name;
+    if (email) employee.email = email;
+    if (position) employee.position = position;
+    if (department) employee.department = department;
     if (phone) employee.phone = phone;
     if (address) employee.address = address;
-    if (department) employee.department = department;
 
     await employee.save();
     res.json({ message: 'Profile updated' });
@@ -108,19 +125,23 @@ export const updateEmployeeProfile = async (req, res) => {
   }
 };
 
-// Update password
 export const updateEmployeePassword = async (req, res) => {
   try {
-    const { oldPassword, newPassword } = req.body;
-    const employee = await Employee.findById(req.user._id);
-    if (!employee) return res.status(404).json({ message: 'User not found' });
+    const employee = await User.findById(req.user._id).select('+password');
 
-    const isMatch = await bcrypt.compare(oldPassword, employee.password);
-    if (!isMatch) return res.status(400).json({ message: 'Incorrect old password' });
+    if (!employee || !employee.password) {
+      return res.status(404).json({ message: "User or password not found" });
+    }
 
-    employee.password = await bcrypt.hash(newPassword, 10);
+    const isMatch = await bcrypt.compare(req.body.oldPassword, employee.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Incorrect old password" });
+    }
+
+    employee.password = req.body.newPassword;
     await employee.save();
-    res.json({ message: 'Password updated' });
+
+    res.json({ message: "Password updated" });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

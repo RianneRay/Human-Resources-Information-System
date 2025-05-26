@@ -1,7 +1,6 @@
 import User from '../models/User.js';
 import jwt from 'jsonwebtoken';
 
-// Generate JWT Token
 const generateToken = (user) => {
   return jwt.sign(
     { _id: user._id, role: user.role },
@@ -10,7 +9,6 @@ const generateToken = (user) => {
   );
 };
 
-// Register Controller
 export const register = async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
@@ -37,7 +35,6 @@ export const register = async (req, res) => {
   }
 };
 
-// Login Controller
 export const login = async (req, res) => {
   const { email, password } = req.body;
 
