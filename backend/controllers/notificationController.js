@@ -1,8 +1,20 @@
+import Employee from '../models/employeeModel.js';
 import Notification from '../models/notificationModel.js';
 
-export const getNotificationsForUser = async (req, res) => {
+export const getNotificationsForEmployee = async (req, res) => {
   try {
-    const notifications = await Notification.find({ user: req.user._id }).sort({ createdAt: -1 });
+    const employee = await Employee.findOne({ user: req.user._id });
+    if (!employee) {
+      return res.status(404).json({ message: 'Employee not found' });
+    }
+
+    const notifications = await Notification.find({
+      $or: [
+        { employee: employee._id },
+        { user: req.user._id } // for backward compatibility
+      ]
+    }).sort({ createdAt: -1 });
+
     res.json(notifications);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -38,21 +50,62 @@ export const deleteNotification = async (req, res) => {
       return res.status(404).json({ message: 'Notification not found' });
     }
 
-    if (notification.user.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ message: 'Forbidden: Cannot delete this notification' });
+    if (notification.employee) {
+      const employee = await Employee.findOne({ user: req.user._id });
+      if (!employee) {
+        return res.status(404).json({ message: 'Employee profile not found' });
+      }
+
+      if (notification.employee.toString() !== employee._id.toString()) {
+        return res.status(403).json({ message: 'Forbidden: Cannot delete this notification' });
+      }
+
+    } else if (notification.user) {
+      if (notification.user.toString() !== req.user._id.toString()) {
+        return res.status(403).json({ message: 'Forbidden: Cannot delete this notification' });
+      }
+
+    } else {
+      console.error('[DEBUG] Notification missing both user and employee:', notification);
+      return res.status(400).json({
+        message: 'Invalid notification: not linked to a user or employee',
+        id: notification._id
+      });
     }
 
     await Notification.findByIdAndDelete(req.params.id);
     res.json({ message: 'Notification deleted successfully' });
+
+  } catch (err) {
+    console.error('deleteNotification error:', err);
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// Delete all notifications (use with caution!)
+export const deleteAllNotifications = async (req, res) => {
+  try {
+    // Optional: check if the user is an admin
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'Forbidden: Admins only' });
+    }
+
+    const result = await Notification.deleteMany({});
+    res.json({ message: `Deleted ${result.deletedCount} notifications` });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
 
-export const createNotification = async (userId, type, message) => {
+export const createNotification = async (employeeId, type, message) => {
   try {
-    const note = new Notification({ user: userId, type, message });
+    const note = new Notification({
+      employee: employeeId,
+      type,
+      message,
+    });
     await note.save();
+    console.log('Notification saved:', note);
   } catch (err) {
     console.error('Failed to create notification:', err.message);
   }

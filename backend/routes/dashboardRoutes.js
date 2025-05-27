@@ -8,6 +8,6 @@ import { protect, adminOnly } from '../middleware/authMiddleware.js';
 const router = express.Router();
 
 router.get('/admin',protect, adminOnly, getAdminDashboard);
-router.get('/employee/:id', protect, getEmployeeDashboard);
+router.get('/employee', protect, getEmployeeDashboard);
 
 export default router;

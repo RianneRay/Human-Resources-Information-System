@@ -1,12 +1,19 @@
 import Leave from '../models/leaveModel.js';
 import { createNotification } from './notificationController.js';
+import Employee from '../models/employeeModel.js';
 
 export const requestLeave = async (req, res) => {
   try {
     const { type, startDate, endDate, reason } = req.body;
 
+    const employee = await Employee.findOne({ user: req.user._id });
+
+    if (!employee) {
+      return res.status(404).json({ message: 'Employee profile not found' });
+    }
+
     const leave = new Leave({
-      employee: req.user._id,
+      employee: employee._id,
       type,
       startDate,
       endDate,
@@ -40,22 +47,32 @@ export const getMyLeaves = async (req, res) => {
 
 export const updateLeaveStatus = async (req, res) => {
   const { status } = req.body;
+
   if (!['Approved', 'Rejected'].includes(status)) {
     return res.status(400).json({ message: 'Invalid status' });
   }
 
   try {
-    const updated = await Leave.findByIdAndUpdate(req.params.id, { status }, { new: true }).populate('employee', 'name');
-    if (!updated) return res.status(404).json({ message: 'Leave request not found' });
+    const updated = await Leave.findById(req.params.id).populate('employee', '_id name');
+
+    if (!updated) {
+      return res.status(404).json({ message: 'Leave request not found' });
+    }
+    
+    updated.status = status;
+    await updated.save();
+
+    console.log('Creating leave notification for:', updated.employee);
 
     await createNotification(
       updated.employee._id,
       'leave',
       `Your leave request from ${new Date(updated.startDate).toDateString()} to ${new Date(updated.endDate).toDateString()} was ${status.toLowerCase()}.`
-      );
+    );
 
     res.json(updated);
   } catch (err) {
+    console.error('Error updating leave status:', err.message);
     res.status(500).json({ message: err.message });
   }
 };

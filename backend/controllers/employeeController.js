@@ -7,13 +7,11 @@ export const createEmployee = async (req, res) => {
   try {
     const { name, email, phone, address, position, department, role, password } = req.body;
 
-    // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ error: 'Email already in use' });
     }
 
-    // Validate department ID if provided
     let departmentRef = null;
     if (department) {
       const foundDept = await Department.findById(department);
@@ -23,8 +21,16 @@ export const createEmployee = async (req, res) => {
       departmentRef = foundDept._id;
     }
 
-    // Create employee profile
+    const user = new User({
+      name,
+      email,
+      password,
+      role: role || 'employee'
+    });
+    await user.save();
+
     const employee = new Employee({
+      user: user._id,
       name,
       email,
       phone,
@@ -34,15 +40,6 @@ export const createEmployee = async (req, res) => {
       role: role || 'employee'
     });
     await employee.save();
-
-    // Create login credentials
-    const user = new User({
-      name,
-      email,
-      password,
-      role: role || 'employee'
-    });
-    await user.save();
 
     res.status(201).json({
       message: 'Employee and login credentials created successfully',
@@ -104,6 +101,7 @@ export const deleteEmployee = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
 export const updateEmployeeProfile = async (req, res) => {
   try {
     const employee = await Employee.findOne({ email: req.user.email });
