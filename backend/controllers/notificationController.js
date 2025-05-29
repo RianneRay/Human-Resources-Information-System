@@ -11,7 +11,7 @@ export const getNotificationsForEmployee = async (req, res) => {
     const notifications = await Notification.find({
       $or: [
         { employee: employee._id },
-        { user: req.user._id } // for backward compatibility
+        { user: req.user._id }
       ]
     }).sort({ createdAt: -1 });
 
@@ -82,10 +82,8 @@ export const deleteNotification = async (req, res) => {
   }
 };
 
-// Delete all notifications (use with caution!)
 export const deleteAllNotifications = async (req, res) => {
   try {
-    // Optional: check if the user is an admin
     if (req.user.role !== 'admin') {
       return res.status(403).json({ message: 'Forbidden: Admins only' });
     }
