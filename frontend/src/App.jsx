@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Login from './pages/Login.jsx';
-import Dashboard from './pages/Dashboard.jsx';
+import AdminDashboard from './pages/AdminDashboard.jsx';
+import EmployeeDashboard from './pages/EmployeeDashboard.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
 
 function App() {
@@ -10,10 +11,18 @@ function App() {
         <Route path="/login" element={<Login />} />
         
         <Route
-          path="/"
+          path="/admindashboard"
           element={
             <ProtectedRoute>
-              <Dashboard />
+              <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/employeedashboard"
+          element={
+            <ProtectedRoute>
+              <EmployeeDashboard />
             </ProtectedRoute>
           }
         />

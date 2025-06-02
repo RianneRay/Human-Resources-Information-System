@@ -17,9 +17,16 @@ function Login() {
         password,
       });
 
-      localStorage.setItem('token', response.data.token);
-      
-      navigate('/');
+      const { token, user } = response.data;
+      localStorage.setItem('token', token);
+
+      if (user.role === 'admin') {
+        navigate('/admindashboard');
+      } else if (user.role === 'employee') {
+        navigate('/employeedashboard');
+      } else {
+        navigate('/');
+      }
     } catch (err) {
       setError(err.response?.data?.message || 'Invalid email or password');
     }
