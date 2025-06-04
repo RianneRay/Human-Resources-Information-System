@@ -45,8 +45,9 @@ export const createEmployee = async (req, res) => {
       message: 'Employee and login credentials created successfully',
       employee
     });
+
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: err.message || 'Server error' });
   }
 };
 
@@ -64,6 +65,23 @@ export const getEmployeeById = async (req, res) => {
     const employee = await Employee.findById(req.params.id);
     if (!employee) return res.status(404).json({ message: 'Not found' });
     res.json(employee);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+
+export const searchEmployeesByName = async (req, res) => {
+  try {
+    const { name } = req.query;
+
+    const query = name
+      ? { name: { $regex: new RegExp(name, 'i') } } // case-insensitive
+      : {};
+
+    const employees = await Employee.find(query).populate('department', 'name');
+
+    res.json(employees);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
