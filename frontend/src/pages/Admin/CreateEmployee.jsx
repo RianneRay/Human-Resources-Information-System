@@ -28,11 +28,14 @@ function CreateEmployee() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-8 bg-white rounded-lg shadow-md mt-8">
-      <h1 className="text-3xl font-bold mb-6 text-blue-800 text-center">
-        Create New Employee
+    <div className="max-w-4xl mx-auto px-4 py-10 mt-10 bg-white rounded-lg shadow-lg">
+      <h1 className="text-4xl font-bold text-blue-900 mb-6 text-center">
+        ➕ Create New Employee
       </h1>
-      <EmployeeForm onSubmit={handleSubmit} onCancel={() => navigate('/admindashboard')} />
+
+      <div className="bg-gray-50 p-6 rounded-md border border-gray-200">
+        <EmployeeForm onSubmit={handleSubmit} onCancel={() => navigate('/admindashboard')} />
+      </div>
     </div>
   );
 }

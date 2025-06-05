@@ -62,8 +62,6 @@ export const updateLeaveStatus = async (req, res) => {
     updated.status = status;
     await updated.save();
 
-    console.log('Creating leave notification for:', updated.employee);
-
     await createNotification(
       updated.employee._id,
       'leave',
@@ -72,7 +70,6 @@ export const updateLeaveStatus = async (req, res) => {
 
     res.json(updated);
   } catch (err) {
-    console.error('Error updating leave status:', err.message);
     res.status(500).json({ message: err.message });
   }
 };

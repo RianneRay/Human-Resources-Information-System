@@ -5,6 +5,7 @@ import CreateEmployee from './pages/Admin/CreateEmployee.jsx';
 import EmployeeList from './pages/Admin/EmployeeList.jsx';
 import Attendance from './pages/Admin/Attendance.jsx';
 import LeaveManagement from './pages/Admin/LeaveManagement.jsx';
+import EmployeeDashboard from './pages/EmployeeDashboard.jsx';
 
 function App() {
   return (
@@ -18,7 +19,10 @@ function App() {
         <Route path="/admin/employees" element={<EmployeeList />} />
         <Route path="/admin/attendance" element={<Attendance />} />
         <Route path="/admin/leaves" element={<LeaveManagement />} />
-
+        
+        {/* employee routes */}
+        <Route path="/employeedashboard" element={<EmployeeDashboard />} />
+        
         <Route path="*" element={<div>404 Not Found</div>} />
       </Routes>
     </Router>
