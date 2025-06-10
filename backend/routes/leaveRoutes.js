@@ -4,7 +4,9 @@ import {
   getAllLeaves,
   updateLeaveStatus,
   deleteLeave,
-  getMyLeaves
+  getMyLeaves,
+  updateMyLeave,
+  deleteMyLeave
 } from '../controllers/leaveController.js';
 import { protect, adminOnly } from '../middleware/authMiddleware.js';
 
@@ -14,6 +16,8 @@ router.post('/', protect, requestLeave);
 
 router.get('/', protect, adminOnly, getAllLeaves);
 router.get('/my', protect, getMyLeaves);
+router.put('/my/:id', protect, updateMyLeave);
+router.delete('/my/:id', protect, deleteMyLeave);
 
 router.route('/:id')
   .put(protect, adminOnly, updateLeaveStatus)

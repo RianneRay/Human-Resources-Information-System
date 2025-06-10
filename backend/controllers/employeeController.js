@@ -3,6 +3,22 @@ import User from '../models/User.js';
 import Department from '../models/departmentModel.js';
 import bcrypt from 'bcryptjs';
 
+export const getMyProfile = async (req, res) => {
+  try {
+    const employee = await Employee.findOne({ user: req.user._id })
+      .populate('department', 'name');
+
+    if (!employee) {
+      return res.status(404).json({ message: 'Employee not found' });
+    }
+
+    res.json(employee);
+  } catch (err) {
+    console.error('Error fetching profile:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 export const createEmployee = async (req, res) => {
   try {
     const { name, email, phone, address, position, department, role, password } = req.body;
@@ -158,6 +174,15 @@ export const updateEmployeePassword = async (req, res) => {
     await employee.save();
 
     res.json({ message: "Password updated" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+export const getDepartmentsForEmployee = async (req, res) => {
+  try {
+    const departments = await Department.find().select('name');
+    res.json(departments);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

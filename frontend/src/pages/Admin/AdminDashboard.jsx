@@ -7,7 +7,8 @@ function AdminDashboard() {
   const [dashboardData, setDashboardData] = useState(null);
   const [error, setError] = useState(null);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [dropdown, setDropdown] = useState({ employees: false, others: false });
+  const [activeDropdown, setActiveDropdown] = useState('');
+  const [activeMobileDropdown, setActiveMobileDropdown] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -38,20 +39,22 @@ function AdminDashboard() {
         <div className="hidden md:flex space-x-6 items-center font-medium text-sm">
           <NavDropdown
             label="Employees"
-            open={dropdown.employees}
-            onToggle={() => setDropdown(prev => ({ ...prev, employees: !prev.employees }))}
+            open={activeDropdown === 'employees'}
+            onToggle={() =>
+              setActiveDropdown((prev) => (prev === 'employees' ? '' : 'employees'))
+            }
             links={[
               { to: '/admin/create-employee', label: 'Create Employee' },
-              { to: '/admin/employees', label: 'Employee List' }
+              { to: '/admin/employees', label: 'Employee List' },
             ]}
           />
           <NavDropdown
             label="Attendance & Leaves"
-            open={dropdown.others}
-            onToggle={() => setDropdown(prev => ({ ...prev, others: !prev.others }))}
+            open={activeDropdown === 'others'}
+            onToggle={() => setActiveDropdown((prev) => (prev === 'others' ? '' : 'others'))}
             links={[
               { to: '/admin/attendance', label: 'Attendance' },
-              { to: '/admin/leaves', label: 'Leaves' }
+              { to: '/admin/leaves', label: 'Leaves' },
             ]}
           />
           <button
@@ -71,16 +74,24 @@ function AdminDashboard() {
         <nav className="md:hidden bg-white border-t shadow px-4 py-3 space-y-2">
           <MobileDropdown
             label="Employees"
+            open={activeMobileDropdown === 'employees'}
+            onToggle={() =>
+              setActiveMobileDropdown((prev) => (prev === 'employees' ? '' : 'employees'))
+            }
             links={[
               { to: '/admin/create-employee', label: 'Create Employee' },
-              { to: '/admin/employees', label: 'Employee List' }
+              { to: '/admin/employees', label: 'Employee List' },
             ]}
           />
           <MobileDropdown
             label="Attendance & Leaves"
+            open={activeMobileDropdown === 'others'}
+            onToggle={() =>
+              setActiveMobileDropdown((prev) => (prev === 'others' ? '' : 'others'))
+            }
             links={[
               { to: '/admin/attendance', label: 'Attendance' },
-              { to: '/admin/leaves', label: 'Leaves' }
+              { to: '/admin/leaves', label: 'Leaves' },
             ]}
           />
           <button
@@ -126,7 +137,7 @@ function AdminDashboard() {
   );
 }
 
-// Dropdown Menu Component
+// Desktop Dropdown
 function NavDropdown({ label, open, onToggle, links }) {
   return (
     <div className="relative group">
@@ -154,31 +165,30 @@ function NavDropdown({ label, open, onToggle, links }) {
   );
 }
 
-// Mobile Dropdown Menu
-function MobileDropdown({ label, links }) {
-  const [open, setOpen] = useState(false);
+// Mobile Dropdown
+function MobileDropdown({ label, links, open, onToggle }) {
   return (
     <div>
       <button
-        onClick={() => setOpen(!open)}
+        onClick={onToggle}
         className="w-full text-left font-medium text-gray-700"
       >
         {label} {open ? '−' : '+'}
       </button>
-      {open && links.map(link => (
-        <Link
-          key={link.to}
-          to={link.to}
-          className="block pl-4 py-1 text-sm text-gray-600 hover:text-blue-600"
-        >
-          {link.label}
-        </Link>
-      ))}
+      {open &&
+        links.map((link) => (
+          <Link
+            key={link.to}
+            to={link.to}
+            className="block pl-4 py-1 text-sm text-gray-600 hover:text-blue-600"
+          >
+            {link.label}
+          </Link>
+        ))}
     </div>
   );
 }
 
-// Dashboard Stat Card
 function StatCard({ label, value }) {
   return (
     <div className="bg-white rounded-xl shadow p-6 hover:shadow-md transition">
@@ -188,7 +198,6 @@ function StatCard({ label, value }) {
   );
 }
 
-// Section Wrapper
 function Section({ title, children }) {
   return (
     <section className="mb-10">
@@ -198,7 +207,6 @@ function Section({ title, children }) {
   );
 }
 
-// Reusable List Item
 function ListItem({ name, email, status, isDate }) {
   const statusClasses = {
     Approved: 'bg-green-100 text-green-700',
@@ -214,7 +222,9 @@ function ListItem({ name, email, status, isDate }) {
       </div>
       <span
         className={`px-3 py-1 rounded-full font-medium text-xs ${
-          isDate ? 'bg-gray-100 text-gray-600' : statusClasses[status] || 'bg-gray-200 text-gray-700'
+          isDate
+            ? 'bg-gray-100 text-gray-600'
+            : statusClasses[status] || 'bg-gray-200 text-gray-700'
         }`}
       >
         {status}

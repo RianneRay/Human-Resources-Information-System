@@ -7,7 +7,9 @@ import {
   updateEmployee,
   deleteEmployee,
   updateEmployeeProfile,
-  updateEmployeePassword
+  updateEmployeePassword,
+  getDepartmentsForEmployee,
+  getMyProfile
 } from '../controllers/employeeController.js';
 import { protect, adminOnly } from '../middleware/authMiddleware.js';
 
@@ -18,6 +20,8 @@ router.route('/')
   .post(protect, adminOnly, createEmployee);
 
 router.get('/search', protect, adminOnly, searchEmployeesByName);
+router.get('/department', protect, getDepartmentsForEmployee);
+router.get('/Profile', protect, getMyProfile);
 
 router.route('/:id')
   .get(protect, adminOnly, getEmployeeById)
@@ -27,5 +31,6 @@ router.route('/:id')
 
 router.put('/profile/update', protect, updateEmployeeProfile);
 router.put('/profile/password', protect, updateEmployeePassword);
+
 
 export default router;
