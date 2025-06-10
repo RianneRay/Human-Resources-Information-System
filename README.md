@@ -29,6 +29,5 @@ A web-based Human Resources Information System (HRIS) designed to simplify emplo
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/RianneRay/HRIS.git
-cd HRIS
+git clone https://github.com/RianneRay/Human-Resources-Information-System/tree/main
 ```
